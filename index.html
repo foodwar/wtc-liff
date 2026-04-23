@@ -249,13 +249,12 @@
 
 <script>
   const LIFF_ID = '2007753158-9x7MsRbe';
-  const GAS_URL = 'YOUR_GAS_URL_HERE'; // จะใส่ทีหลังหลัง deploy Google Apps Script
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxPHX_mDvzpaP2uReFK5ofmngL6YYwL_ohFe67XI5bKk-F0UWMCSmG6Pi8fQrvw3GzJ/exec';
 
   let currentType = 'employee';
   let lineUserId = '';
   let lineDisplayName = '';
 
-  // Init LIFF
   async function initLiff() {
     try {
       await liff.init({ liffId: LIFF_ID });
@@ -334,8 +333,7 @@
         ? 'ระบบบันทึกข้อมูลแล้ว\nเมนูจะเปลี่ยนโดยอัตโนมัติภายในไม่กี่วินาที'
         : 'ระบบบันทึกข้อมูลแล้ว\nทีมงาน WTC จะติดต่อกลับเร็วๆ นี้';
       document.getElementById('successMsg').innerHTML = msg.replace('\n', '<br>');
-      const s = document.getElementById('successScreen');
-      s.style.display = 'flex';
+      document.getElementById('successScreen').style.display = 'flex';
     } catch (err) {
       btn.disabled = false;
       btn.textContent = 'ยืนยันลงทะเบียน';
