@@ -322,11 +322,9 @@
     btn.textContent = 'กำลังบันทึก...';
 
     try {
-      await fetch(GAS_URL, {
-        method: 'POST',
-         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(data)
-      });
+      const params = new URLSearchParams();
+      Object.keys(data).forEach(k => params.append(k, data[k]));
+      await fetch(GAS_URL + '?' + params.toString());
       document.getElementById('formScreen').style.display = 'none';
       const msg = currentType === 'employee'
         ? 'ระบบบันทึกข้อมูลแล้ว\nเมนูจะเปลี่ยนโดยอัตโนมัติภายในไม่กี่วินาที'
