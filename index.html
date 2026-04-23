@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ลงทะเบียน WTC</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; }
+
+    .header {
+      background: #06C755;
+      padding: 20px 20px 24px;
+      color: #fff;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header p { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+
+    .card {
+      background: #fff;
+      margin: 16px;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .type-label { font-size: 12px; color: #555; margin-bottom: 8px; font-weight: 500; }
+    .type-row { display: flex; gap: 8px; margin-bottom: 20px; }
+    .type-chip {
+      flex: 1; text-align: center;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      padding: 10px 4px;
+      font-size: 13px;
+      color: #555;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .type-chip.active {
+      border-color: #06C755;
+      background: #edfbf3;
+      color: #065f2c;
+      font-weight: 600;
+    }
+
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; color: #555; margin-bottom: 5px; font-weight: 500; }
+    .field input, .field select {
+      width: 100%;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 15px;
+      color: #222;
+      background: #fafafa;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field input:focus, .field select:focus {
+      border-color: #06C755;
+      background: #fff;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .field .required { color: #e53935; margin-left: 2px; }
+
+    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 4px 0 16px; }
+
+    .userid-note {
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: #06C755;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+    }
+    .btn-submit:disabled { background: #b2dfcb; cursor: not-allowed; }
+
+    .success-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .success-icon {
+      width: 72px; height: 72px;
+      background: #edfbf3;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      font-size: 36px;
+    }
+    .success-screen h2 { font-size: 20px; color: #065f2c; margin-bottom: 8px; }
+    .success-screen p { font-size: 14px; color: #666; line-height: 1.6; }
+
+    .loading-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 12px;
+      color: #999;
+      font-size: 14px;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #e0e0e0;
+      border-top-color: #06C755;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg { color: #e53935; font-size: 12px; margin-top: 6px; display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="spinner"></div>
+  <span>กำลังโหลด...</span>
+</div>
+
+<!-- Form -->
+<div id="formScreen" style="display:none;">
+  <div class="header">
+    <h1>ลงทะเบียน WTC</h1>
+    <p>กรุณากรอกข้อมูลให้ครบถ้วน</p>
+  </div>
+
+  <div class="card">
+    <div class="type-label">คุณคือ <span class="required">*</span></div>
+    <div class="type-row">
+      <div class="type-chip active" data-type="employee" onclick="selectType('employee')">พนักงาน</div>
+      <div class="type-chip" data-type="customer" onclick="selectType('customer')">ลูกค้า</div>
+      <div class="type-chip" data-type="supplier" onclick="selectType('supplier')">ซัพพลายเออร์</div>
+    </div>
+
+    <!-- พนักงาน -->
+    <div id="fields-employee">
+      <div class="field">
+        <label>ชื่อ-นามสกุล <span class="required">*</span></label>
+        <input type="text" id="emp-name" placeholder="ชื่อจริง นามสกุล" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>แผนก / ตำแหน่ง <span class="required">*</span></label>
+        <select id="emp-dept">
+          <option value="">เลือกแผนก</option>
+          <option value="รปภ.">รปภ.</option>
+          <option value="โบว์เค้าท์">โบว์เค้าท์ (หน้างาน)</option>
+          <option value="office-production">ออฟฟิส — ผลิต</option>
+          <option value="office-sales">ออฟฟิส — ขาย</option>
+          <option value="office-accounting">ออฟฟิส — บัญชี</option>
+          <option value="office-hr">ออฟฟิส — HR</option>
+          <option value="management">ผู้บริหาร</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>เบอร์โทรติดต่อ</label>
+        <input type="tel" id="emp-phone" placeholder="08x-xxx-xxxx" autocomplete="off">
+      </div>
+    </div>
+
+    <!-- ลูกค้า -->
+    <div id="fields-customer" style="display:none;">
+      <div class="field">
+        <label>ชื่อ-นามสกุล <span class="required">*</span></label>
+        <input type="text" id="cus-name" placeholder="ชื่อจริง นามสกุล" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>บริษัท / องค์กร <span class="required">*</span></label>
+        <input type="text" id="cus-company" placeholder="ชื่อบริษัท" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>เบอร์โทรติดต่อ <span class="required">*</span></label>
+        <input type="tel" id="cus-phone" placeholder="08x-xxx-xxxx" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>โปรเจกต์ที่เกี่ยวข้อง</label>
+        <input type="text" id="cus-project" placeholder="ชื่อโครงการ หรือที่ตั้ง" autocomplete="off">
+      </div>
+    </div>
+
+    <!-- ซัพพลายเออร์ -->
+    <div id="fields-supplier" style="display:none;">
+      <div class="field">
+        <label>ชื่อ-นามสกุล <span class="required">*</span></label>
+        <input type="text" id="sup-name" placeholder="ชื่อจริง นามสกุล" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>บริษัท <span class="required">*</span></label>
+        <input type="text" id="sup-company" placeholder="ชื่อบริษัท" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>ประเภทสินค้า / บริการ <span class="required">*</span></label>
+        <select id="sup-type">
+          <option value="">เลือกประเภท</option>
+          <option value="วัตถุดิบ">วัตถุดิบ / วัสดุ</option>
+          <option value="เครื่องจักร">เครื่องจักร / อะไหล่</option>
+          <option value="ขนส่ง">ขนส่ง / โลจิสติกส์</option>
+          <option value="บริการ">บริการทั่วไป</option>
+          <option value="อื่นๆ">อื่นๆ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>เบอร์โทรติดต่อ <span class="required">*</span></label>
+        <input type="tel" id="sup-phone" placeholder="08x-xxx-xxxx" autocomplete="off">
+      </div>
+    </div>
+
+    <hr class="divider">
+    <p class="userid-note">LINE ID ของคุณจะถูกบันทึกอัตโนมัติ<br>เพื่อกำหนดเมนูที่เหมาะสมกับคุณ</p>
+    <div class="error-msg" id="errorMsg">กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน</div>
+    <button class="btn-submit" id="submitBtn" onclick="submitForm()">ยืนยันลงทะเบียน</button>
+  </div>
+</div>
+
+<!-- Success -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✓</div>
+  <h2>ลงทะเบียนสำเร็จ!</h2>
+  <p id="successMsg">ระบบบันทึกข้อมูลแล้ว<br>เมนูจะเปลี่ยนโดยอัตโนมัติภายในไม่กี่วินาที</p>
+</div>
+
+<script>
+  const LIFF_ID = '2007753158-9x7MsRbe';
+  const GAS_URL = 'YOUR_GAS_URL_HERE'; // จะใส่ทีหลังหลัง deploy Google Apps Script
+
+  let currentType = 'employee';
+  let lineUserId = '';
+  let lineDisplayName = '';
+
+  // Init LIFF
+  async function initLiff() {
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      const profile = await liff.getProfile();
+      lineUserId = profile.userId;
+      lineDisplayName = profile.displayName;
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('formScreen').style.display = 'block';
+    } catch (err) {
+      document.getElementById('loadingScreen').innerHTML = '<p style="color:#e53935;padding:20px">เกิดข้อผิดพลาด: ' + err.message + '</p>';
+    }
+  }
+
+  function selectType(type) {
+    currentType = type;
+    document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('[data-type="' + type + '"]').classList.add('active');
+    ['employee','customer','supplier'].forEach(t => {
+      document.getElementById('fields-' + t).style.display = t === type ? 'block' : 'none';
+    });
+  }
+
+  function getFormData() {
+    const data = { type: currentType, lineUserId, lineDisplayName, timestamp: new Date().toISOString() };
+    if (currentType === 'employee') {
+      data.name = document.getElementById('emp-name').value.trim();
+      data.dept = document.getElementById('emp-dept').value;
+      data.phone = document.getElementById('emp-phone').value.trim();
+    } else if (currentType === 'customer') {
+      data.name = document.getElementById('cus-name').value.trim();
+      data.company = document.getElementById('cus-company').value.trim();
+      data.phone = document.getElementById('cus-phone').value.trim();
+      data.project = document.getElementById('cus-project').value.trim();
+    } else {
+      data.name = document.getElementById('sup-name').value.trim();
+      data.company = document.getElementById('sup-company').value.trim();
+      data.supType = document.getElementById('sup-type').value;
+      data.phone = document.getElementById('sup-phone').value.trim();
+    }
+    return data;
+  }
+
+  function validate(data) {
+    if (!data.name) return false;
+    if (currentType === 'employee' && !data.dept) return false;
+    if (currentType === 'customer' && (!data.company || !data.phone)) return false;
+    if (currentType === 'supplier' && (!data.company || !data.supType || !data.phone)) return false;
+    return true;
+  }
+
+  async function submitForm() {
+    const data = getFormData();
+    const errEl = document.getElementById('errorMsg');
+    if (!validate(data)) {
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'กำลังบันทึก...';
+
+    try {
+      await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      document.getElementById('formScreen').style.display = 'none';
+      const msg = currentType === 'employee'
+        ? 'ระบบบันทึกข้อมูลแล้ว\nเมนูจะเปลี่ยนโดยอัตโนมัติภายในไม่กี่วินาที'
+        : 'ระบบบันทึกข้อมูลแล้ว\nทีมงาน WTC จะติดต่อกลับเร็วๆ นี้';
+      document.getElementById('successMsg').innerHTML = msg.replace('\n', '<br>');
+      const s = document.getElementById('successScreen');
+      s.style.display = 'flex';
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'ยืนยันลงทะเบียน';
+      alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+    }
+  }
+
+  initLiff();
+</script>
+</body>
+</html>
