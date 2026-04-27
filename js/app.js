@@ -2,11 +2,11 @@ const LIFF_ID = '2007753158-9x7MsRbe';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbynjzyQDNPDCrR8EtxFDo-zskBFSdRwwmWGzAdgGrqPTkgB9sx6Etvq1w8RKA1p8WMn/exec';
 const MAKE_WEBHOOK = 'https://hook.us2.make.com/u2tzh7nu2re36nwsxmzciu4f3qx7xda9';
 
-// Rich Menu IDs — Make จะรับ richMenuId ตรงๆ ไม่ต้อง map ใน Make
+// Rich Menu IDs — OA จริง (WTC Concrete) อัปเดต 27 เม.ย. 2026
 const RICH_MENU = {
-  'รปภ.':       'richmenu-117804180fadd105ffd098c289c5efd8',
-  'โบว์เค้าท์': 'richmenu-8a6dc6e3f38b29a1f4d951ca685de420',
-  'office':     'richmenu-53322046c70f8b44587de3068be7cfe0'
+  'รปภ.':       'richmenu-607d09e08653b21283ef2d692d2c4539',
+  'โบว์เค้าท์': 'richmenu-d816b9c677b567b15aba5269383ed4ba',
+  'office':     'richmenu-488b2bd33a06336eea2185e1c3a4365c'
 };
 
 let currentType = 'employee';
