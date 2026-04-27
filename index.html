@@ -309,7 +309,7 @@
     return true;
   }
 
-  async function submitForm() {
+  function submitForm() {
     const data = getFormData();
     const errEl = document.getElementById('errorMsg');
     if (!validate(data)) {
@@ -321,24 +321,24 @@
     btn.disabled = true;
     btn.textContent = 'กำลังบันทึก...';
 
-    try {
-      const params = new URLSearchParams();
-      Object.keys(data).forEach(k => params.append(k, data[k]));
-      const res = await fetch(GAS_URL + '?' + params.toString(), {
-        method: 'GET',
-        mode: 'no-cors'
-      });
+    // Build URL
+    const params = new URLSearchParams();
+    Object.keys(data).forEach(k => params.append(k, data[k]));
+    const url = GAS_URL + '?' + params.toString();
+
+    // Fire-and-forget via Image beacon — ทำงานได้ใน LINE WebView ไม่มี CORS issue
+    const img = new Image();
+    img.src = url;
+
+    // แสดง success ทันที ไม่รอ response
+    setTimeout(function() {
       document.getElementById('formScreen').style.display = 'none';
       const msg = currentType === 'employee'
-        ? 'ระบบบันทึกข้อมูลแล้ว\nเมนูจะเปลี่ยนโดยอัตโนมัติภายในไม่กี่วินาที'
-        : 'ระบบบันทึกข้อมูลแล้ว\nทีมงาน WTC จะติดต่อกลับเร็วๆ นี้';
-      document.getElementById('successMsg').innerHTML = msg.replace('\n', '<br>');
+        ? 'ระบบบันทึกข้อมูลแล้ว<br>เมนูจะเปลี่ยนโดยอัตโนมัติภายในไม่กี่วินาที'
+        : 'ระบบบันทึกข้อมูลแล้ว<br>ทีมงาน WTC จะติดต่อกลับเร็วๆ นี้';
+      document.getElementById('successMsg').innerHTML = msg;
       document.getElementById('successScreen').style.display = 'flex';
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'ยืนยันลงทะเบียน';
-      alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-    }
+    }, 800);
   }
 
   initLiff();
