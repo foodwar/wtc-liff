@@ -249,7 +249,7 @@
 
 <script>
   const LIFF_ID = '2007753158-9x7MsRbe';
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxPHX_mDvzpaP2uReFK5ofmngL6YYwL_ohFe67XI5bKk-F0UWMCSmG6Pi8fQrvw3GzJ/exec';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbynjzyQDNPDCrR8EtxFDo-zskBFSdRwwmWGzAdgGrqPTkgB9sx6Etvq1w8RKA1p8WMn/exec';
 
   let currentType = 'employee';
   let lineUserId = '';
@@ -324,7 +324,10 @@
     try {
       const params = new URLSearchParams();
       Object.keys(data).forEach(k => params.append(k, data[k]));
-      await fetch(GAS_URL + '?' + params.toString());
+      const res = await fetch(GAS_URL + '?' + params.toString(), {
+        method: 'GET',
+        mode: 'no-cors'
+      });
       document.getElementById('formScreen').style.display = 'none';
       const msg = currentType === 'employee'
         ? 'ระบบบันทึกข้อมูลแล้ว\nเมนูจะเปลี่ยนโดยอัตโนมัติภายในไม่กี่วินาที'
