@@ -250,6 +250,7 @@
 <script>
   const LIFF_ID = '2007753158-9x7MsRbe';
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbynjzyQDNPDCrR8EtxFDo-zskBFSdRwwmWGzAdgGrqPTkgB9sx6Etvq1w8RKA1p8WMn/exec';
+  const MAKE_WEBHOOK = 'https://hook.us2.make.com/u2tzh7nu2re36nwsxmzciu4f3qx7xda9';
 
   let currentType = 'employee';
   let lineUserId = '';
@@ -309,6 +310,14 @@
     return true;
   }
 
+  // แปลง dept → role ที่ Make webhook รับ
+  function deptToRole(dept) {
+    if (dept === 'รปภ.') return 'รปภ';
+    if (dept === 'โบว์เค้าท์') return 'โบว์เค้าท์';
+    if (dept.startsWith('office') || dept === 'management') return 'office';
+    return null; // customer/supplier ยังไม่มี menu
+  }
+
   function submitForm() {
     const data = getFormData();
     const errEl = document.getElementById('errorMsg');
@@ -321,16 +330,25 @@
     btn.disabled = true;
     btn.textContent = 'กำลังบันทึก...';
 
-    // Build URL
+    // 1) ส่งข้อมูลเข้า GAS → Sheet (fire-and-forget via Image beacon)
     const params = new URLSearchParams();
     Object.keys(data).forEach(k => params.append(k, data[k]));
-    const url = GAS_URL + '?' + params.toString();
+    new Image().src = GAS_URL + '?' + params.toString();
 
-    // Fire-and-forget via Image beacon — ทำงานได้ใน LINE WebView ไม่มี CORS issue
-    const img = new Image();
-    img.src = url;
+    // 2) ถ้าเป็น employee → call Make webhook เพื่อ assign Rich Menu
+    if (currentType === 'employee' && data.lineUserId) {
+      const role = deptToRole(data.dept);
+      if (role) {
+        fetch(MAKE_WEBHOOK, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: data.lineUserId, role: role })
+        }).catch(function() {}); // ไม่สนใจ error — fire-and-forget
+      }
+    }
 
-    // แสดง success ทันที ไม่รอ response
+    // 3) แสดง success screen หลัง 800ms
     setTimeout(function() {
       document.getElementById('formScreen').style.display = 'none';
       const msg = currentType === 'employee'
