@@ -2,6 +2,13 @@ const LIFF_ID = '2007753158-9x7MsRbe';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbynjzyQDNPDCrR8EtxFDo-zskBFSdRwwmWGzAdgGrqPTkgB9sx6Etvq1w8RKA1p8WMn/exec';
 const MAKE_WEBHOOK = 'https://hook.us2.make.com/u2tzh7nu2re36nwsxmzciu4f3qx7xda9';
 
+// Rich Menu IDs — Make จะรับ richMenuId ตรงๆ ไม่ต้อง map ใน Make
+const RICH_MENU = {
+  'รปภ.':       'richmenu-117804180fadd105ffd098c289c5efd8',
+  'โบว์เค้าท์': 'richmenu-8a6dc6e3f38b29a1f4d951ca685de420',
+  'office':     'richmenu-53322046c70f8b44587de3068be7cfe0'
+};
+
 let currentType = 'employee';
 let lineUserId = '';
 let lineDisplayName = '';
@@ -60,11 +67,11 @@ function validate(data) {
   return true;
 }
 
-// แปลง dept → role ที่ Make webhook รับ
-function deptToRole(dept) {
-  if (dept === 'รปภ.') return 'รปภ';
-  if (dept === 'โบว์เค้าท์') return 'โบว์เค้าท์';
-  if (dept.startsWith('office') || dept === 'management') return 'office';
+// แปลง dept → richMenuId ตรงๆ
+function deptToRichMenuId(dept) {
+  if (dept === 'รปภ.') return RICH_MENU['รปภ.'];
+  if (dept === 'โบว์เค้าท์') return RICH_MENU['โบว์เค้าท์'];
+  if (dept.startsWith('office') || dept === 'management') return RICH_MENU['office'];
   return null;
 }
 
@@ -85,15 +92,15 @@ function submitForm() {
   Object.keys(data).forEach(k => params.append(k, data[k]));
   new Image().src = GAS_URL + '?' + params.toString();
 
-  // 2) ถ้าเป็น employee → call Make webhook เพื่อ assign Rich Menu
+  // 2) ถ้าเป็น employee → call Make webhook ด้วย userId + richMenuId ตรงๆ
   if (currentType === 'employee' && data.lineUserId) {
-    const role = deptToRole(data.dept);
-    if (role) {
+    const richMenuId = deptToRichMenuId(data.dept);
+    if (richMenuId) {
       fetch(MAKE_WEBHOOK, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: data.lineUserId, role: role })
+        body: JSON.stringify({ userId: data.lineUserId, richMenuId: richMenuId })
       }).catch(function() {});
     }
   }
