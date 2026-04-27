@@ -1,6 +1,6 @@
 const LIFF_ID = '2007753158-9x7MsRbe';
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbynjzyQDNPDCrR8EtxFDo-zskBFSdRwwmWGzAdgGrqPTkgB9sx6Etvq1w8RKA1p8WMn/exec';
-const MAKE_WEBHOOK = 'https://hook.us2.make.com/u2tzh7nu2re36nwsxmzciu4f3qx7xda9';
+const MAKE_WEBHOOK = 'https://hook.us2.make.com/6isy5ne57p928pv71ah5s5nk38b9hq8y';
 
 // Rich Menu IDs — OA จริง (WTC Concrete) อัปเดต 27 เม.ย. 2026
 const RICH_MENU = {
@@ -67,7 +67,6 @@ function validate(data) {
   return true;
 }
 
-// แปลง dept → richMenuId ตรงๆ
 function deptToRichMenuId(dept) {
   if (dept === 'รปภ.') return RICH_MENU['รปภ.'];
   if (dept === 'โบว์เค้าท์') return RICH_MENU['โบว์เค้าท์'];
@@ -87,12 +86,10 @@ function submitForm() {
   btn.disabled = true;
   btn.textContent = 'กำลังบันทึก...';
 
-  // 1) ส่งข้อมูลเข้า GAS → Sheet
   const params = new URLSearchParams();
   Object.keys(data).forEach(k => params.append(k, data[k]));
   new Image().src = GAS_URL + '?' + params.toString();
 
-  // 2) ถ้าเป็น employee → call Make webhook ด้วย userId + richMenuId ตรงๆ
   if (currentType === 'employee' && data.lineUserId) {
     const richMenuId = deptToRichMenuId(data.dept);
     if (richMenuId) {
@@ -105,7 +102,6 @@ function submitForm() {
     }
   }
 
-  // 3) แสดง success screen
   setTimeout(function() {
     document.getElementById('formScreen').style.display = 'none';
     const msg = currentType === 'employee'
